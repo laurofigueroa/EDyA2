@@ -1,9 +1,7 @@
-let al = (Node Nil 1 ("al", 1) Nil)
-let cl = (Node Nil 1 ("cl", 3) Nil)
-let cr = (Node Nil 1 ("cr", 3) Nil)
-let br = (Node Nil 1 ("br", 2) Nil)
-let c = (Node cl 2 ("c", 2) cr)
-let b = (Node c 3 ("b", 1) br)
-let a = (Node al 4 ("a", 0) b)
-
-(Node Nil 1 ("al",1) Nil) 4 ("a",0) (Node (Node (Node Nil 1 ("cl",3) Nil) 2 ("c",2) (Node Nil 1 ("cr",3) Nil)) 3 ("b",1) (Node Nil 1 ("br",2) Nil))
+let f = insert ('f',1) Nil
+let c = insert ('c',2) f
+let a = insert ('a',3) c
+let d = insert ('d',4) a
+let i = insert ('i',5) d
+let g = insert ('g',6) i
+let j = insert ('j',7) g
