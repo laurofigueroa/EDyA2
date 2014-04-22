@@ -12,18 +12,23 @@ data BTree32 k a = Nil --arbol vacio
                     (BTree32 k a) --subarbol izquierdo
                     Int           --tamaño del arbol
                     (k,a)         --elemento del nodo
-                    (BTree32 k a) deriving Show --subarbol derecho
-                    
-                    
+                    (BTree32 k a) deriving Show --subarbol derecho              
+
+instance Diccionario BTree32 where
+	vacia = Nil                    
+
+	buscar k t = lookup2 k t
+	
+	eliminar k t = delete k t
+
+	insertar a t = insert a t
+
 size :: BTree32 k a -> Int
 size Nil = 0
 size (Node l s (k, a) r) = s
                     
 lookup2 :: Ord k => k -> BTree32 k a -> Maybe a
 lookup2 k Nil = Nothing
---lookup2 k (Node Nil s (key,a) Nil) = if k == key then Just a else Nothing
---lookup2 k (Node Nil s (key,a) r) = if k == key then Just a else lookup2 k r
---lookup2 k (Node l s (key,a) Nil) = if k == key then Just a else lookup2 k l
 lookup2 k (Node l s (key,a) r) 
     | k == key = Just a
     | k < key = lookup2 k l
@@ -39,7 +44,6 @@ doubleL Nil = Nil
 doubleL (Node l s (key, a) (Node (Node cl s1 (key1, a1) cr) s' (key', a') d)) = (Node (Node l (size l + size cl +1) (key, a) cl) s (key1, a1) (Node cr (size cr + size d +1) (key',a') d))
 
 singleR :: BTree32 k a -> BTree32 k a
---singleR Nil = Nil 
 singleR (Node Nil s (key, a) r) = Node Nil s (key, a) r
 singleR (Node (Node aleft s (key, a) c) s' (key', a') d) = (Node aleft s' (key, a) (Node c s (key', a') d))
 
@@ -81,14 +85,34 @@ delRoot (Node l s (k, a) Nil) = l
 delRoot (Node l s (k, a) r) = balance (recont (search l) l ) (search l) r
 
 
-
 dlete :: Ord k => k -> BTree32 k a -> BTree32 k a
 dlete key Nil = Nil
 dlete key (t @ (Node l s (k, a) r)) 	| key < k = Node (dlete key l) (s-1) (k, a) r
 			       		| key > k = Node l (s-1) (k, a) (dlete key r) 
 					| key == k = delRoot t
 
-delete :: (Ord k, Eq a) =>  k -> BTree32 k a -> BTree32 k a
+is_key :: Ord k => k -> BTree32 k a -> k
+is_key key (Node Nil s (k,a) Nil) = k
+is_key key (Node Nil s (k,a) r) = if key <= k then k else is_key key r
+is_key key (Node l s (k,a) Nil) = if key >= k then k else is_key key l
+is_key key (Node l s (k,a) r) | k == key = k
+			      | k > key = is_key key l
+			      | k < key = is_key key r 
+
+delete :: Ord k =>  k -> BTree32 k a -> BTree32 k a
 delete _ Nil = Nil
-delete key (t @ (Node l s (k, a) r)) = if lookup2 key t /= Nothing then dlete key t else t 
+delete key (t @ (Node l s (k, a) r)) = if (is_key key t) == key then dlete key t else t
+
+
+tree1 :: BTree32 String String
+tree1 = let tree = vacia :: BTree32 String String
+            tree2 = insertar ("1","1") tree
+            tree3 = insertar ("2","dos") tree2
+            tree4 = insertar ("3","3") tree3
+            tree5 = insertar ("4","4") tree4
+            tree6 = insertar ("5","5") tree5
+            tree7 = insertar ("6","6") tree6
+            tree8 = insertar ("7","7") tree7
+            tree9 = insertar ("8","8") tree8
+        in tree9
 
