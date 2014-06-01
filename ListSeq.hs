@@ -1,75 +1,59 @@
---import Seq
-import Par
-import Data.List
+import Seq
 
-data ListView a t = NIL | CONS a t 
-                   deriving Show
+singleton :: a -> [a]
+singelton a = [a]
 
-singletonS :: a -> ListView a t
-singletonS x = CONS x NIL
+nth :: [a] -> Int -> a
+nth (x:xs) 0 = x
+nth (x:xs) n = nth xs (n-1)
 
-lengthS :: ListView a t -> Int
-lengthS NIL = 0
-lengthS (CONS a t) = 1 + lengthS t 
+tabulate' :: (Int -> a) -> Int -> Int -> [a]
+tabulate' f n 0 = [f n]
+tabulate' f n m = [f n] ++ tabulate' f (n+1) (m-1)
 
-nthS :: ListView a t -> Int -> a
-nthS (CONS a t) 0 = a
-nthS (CONS a t) n = nthS t (n-1)
+tabulate :: (Int -> a) -> Int -> [a]
+tabulate f n = tabulate' f 0 n
 
-tabulateS' :: (Int -> a) -> Int -> Int -> ListView a t
-tabulateS' f 0 k = NIL
-tabulateS' f n k = CONS (f k) (tabulateS' f (n-1) (k+1))
+map' :: (b -> a) -> [b] -> [a]
+map' f [] = []
+map' f (x:xs) = (f x) : map' f xs
 
-tabulateS :: (Int -> a) -> Int -> ListView a t
-tabulateS f n = tabulateS' f n 0
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' f [] = []
+filter' f (x:xs) = if f x then x : filter' f xs else filter' f xs
 
-mapS :: (a -> b) -> ListView a t -> ListView b t
-mapS f NIL = NIL
-mapS f (CONS a t) = CONS (f a) (mapS f t)
+append' :: [a] -> [a] -> [a]
+append' [] xs = xs
+append' (x:xs) ys = x : append' xs ys 
 
-filterS :: (a -> Bool) -> ListView a t -> ListView a t
-filterS f NIL = NIL
-filterS f (CONS a t) = if f a then CONS a (filterS f t) else filterS f t
+take' :: [a] -> Int -> [a] 
+take' xs 0 = []
+take' (x:xs) n = x : take' xs (n-1)
 
-appendS :: ListView a t -> ListView a t -> ListView a t
-appendS NIL l = l
-appendS (CONS a t) l = CONS a (appendS t l) 
+drop' :: [a] -> Int -> [a]
+drop' xs 0 = xs
+drop' (x:xs) n = drop' xs (n-1)
 
-takeS :: ListView a t -> Int -> ListView a t
-takeS NIL n = NIL
-takeS l 0 = NIL
-takeS (CONS a t) n = CONS a (takeS t (n-1))
+showt :: [a] -> TreeView a [a]
+showt [] = EMPTY
+showt [x] = ELT x
+showt xs = let (lt, rt) = splitAt (div (length' xs) 2) xs
+           in NODE lt rt 
 
-dropS :: ListView a t -> Int -> ListView a t
-dropS NIL n = NIL
-dropS l 0 = l
-dropS (CONS a t) n = dropS t (n-1)
+showl :: [a] -> ListView a [a]
+showl [] = NIL
+showl (x:xs) = CONS x xs
 
-showlS :: ListView a t -> ListView a (ListView a t)
-showlS NIL = CONS NIL NIL
-showlS (CONS a t) = CONS (CONS a NIL) (showlS t)
+join' :: [[a]] -> [a]
+join' [] = []
+join' (x:xs) = append' x (join' xs)
 
-joinS :: ListView a (ListView a t) -> ListView a t
-joinS (CONS NIL NIL) = NIL
-joinS (CONS a t) = appendS a (joinS t)
+reduce' :: (a -> a -> a) -> a -> [a] -> a
+reduce' f b [] = b
+reduce' f b (x:xs) = f x (reduce f b xs)
 
-reduceS :: (a -> a -> a) -> a -> ListView a t -> a
-reduceS f e NIL = e
-reduceS f e (CONS a t) = f a (reduceS f e t)
-
-{-let (a,v ) = (reduceS f e (take lengthS(cons a t)/2, drop
-in f a v-}
-
---scanS :: (a -> a -> a) -> a -> ListView a t -> (ListView a t, a)
---scanS f 
-
-fromList :: [a] -> ListView a t 
-fromList [] = NIL
-fromList [x] = CONS x NIL
-fromList (x:xs) = let (ls, rs) = splitAt (div (length (x:xs)) 2) (x:xs)
-                      (ls', rs') = (fromList ls ||| fromList rs)
-                  in appendS ls' rs'
-
+scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
+scan' f b [] = 
 
 
 
