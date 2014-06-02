@@ -9,12 +9,12 @@ nth (x:xs) n = nth xs (n-1)
 
 tabulate' :: (Int -> a) -> Int -> Int -> [a]
 tabulate' f n 0 = [f n]
-tabulate' f n m = [f n] ++ tabulate' f (n+1) (m-1)
+tabulate' f n m = f n : tabulate' f (n+1) (m-1)
 
 tabulate :: (Int -> a) -> Int -> [a]
 tabulate f 0 = []
 tabulate f 1 = f 0
-tabulate f n = let (a, b) = (tabulate f (div n 2) ||| tabulate f.(+(div n 2))(div n 2))
+tabulate f n = let (a, b) = (tabulate f (div n 2) ||| tabulate f.(+(div n 2))(n - div n 2))
                     in a ++ b
 
 map' :: (b -> a) -> [b] -> [a]

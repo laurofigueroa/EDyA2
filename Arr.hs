@@ -80,7 +80,7 @@ map' f arr = let (a,b) = (f (arr ! 0) ||| map' f (drop arr 1))
 append :: Arr a -> Arr a -> Arr a
 append arr1 arr2 = tabulate (append_aux arr1 arr2) ((length arr1) + (length arr2))
 
-append_aux arr1 arr2 n = if n >= l1 then arr2 ! (n - l1) else arr1 ! (n) 
+8append_aux arr1 arr2 n = if n >= l1 then arr2 ! (n - l1) else arr1 ! (n) 
                        where l1 = length arr1
 
 map' f arr = tabulate (map_aux f arr) (length arr)
@@ -92,5 +92,18 @@ filter_aux f a = if f a then singleton a else empty
 
 filter' f arr = flatten (map' (filter_aux f) arr)
 
+contraer :: Arr a -> Int -> (a -> a -> a) -> Arr a
+contraer arr 0 f = empty
+contraer arr 1 f = ingleton rr ! 0
+contraer arr l f = tabulate (\i -> f (nth i l) (nth i+1 l)) (lenght l)
 
-  
+let (a, b) = (singleton (f (arr ! 0) (arr ! 1)) ||| contraer (drop arr 2) (l-2) f)
+			in append a b
+
+
+--contraer arr l f = append (singleton (f (arr ! 0) (arr ! 1))) (contraer (drop arr 2) (l-2) f) 
+
+reduce :: (a -> a -> a) -> a -> Arr a -> a
+reduce f b arr = if l1 == 1 then f b (arr ! 0) else reduce f b (contraer arr l1 f)
+		where l1 = length arr	
+
