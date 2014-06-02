@@ -12,7 +12,10 @@ tabulate' f n 0 = [f n]
 tabulate' f n m = [f n] ++ tabulate' f (n+1) (m-1)
 
 tabulate :: (Int -> a) -> Int -> [a]
-tabulate f n = tabulate' f 0 n
+tabulate f 0 = []
+tabulate f 1 = f 0
+tabulate f n = let (a, b) = (tabulate f (div n 2) ||| tabulate f.(+(div n 2))(div n 2))
+                    in a ++ b
 
 map' :: (b -> a) -> [b] -> [a]
 map' f [] = []
@@ -20,7 +23,7 @@ map' f (x:xs) = (f x) : map' f xs
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' f [] = []
-filter' f (x:xs) = if f x then x : filter' f xs else filter' f xs
+filter' f (x:xs) = if f x then x : (filter' f xs) else filter' f xs
 
 append' :: [a] -> [a] -> [a]
 append' [] xs = xs
@@ -53,7 +56,7 @@ reduce' f b [] = b
 reduce' f b (x:xs) = f x (reduce f b xs)
 
 scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
-scan' f b [] = 
+--scan' f b [] = 
 
 
 
