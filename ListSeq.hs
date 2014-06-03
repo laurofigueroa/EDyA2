@@ -62,6 +62,10 @@ reduce' :: (a -> a -> a) -> a -> [a] -> a
 reduce' f b [] = b
 reduce' f b (x:xs) = f x (reduce' f b xs)
 
+reduce :: (a -> a -> a) -> a -> [a] -> a
+reduce f b [x] = f b x
+reduce f b (x:xs) = reduce f b (contraer (x:xs) f)
+
 --scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
 --scan' f b [] = 
 

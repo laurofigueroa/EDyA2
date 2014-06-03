@@ -1,6 +1,9 @@
 \documentclass[a4paper,12pt]{article}
 \usepackage[spanish]{babel} % Soporte en español.
-\usepackage[latin1]{inputenc} % Caracteres con acentos.
+%\usepackage[latin1]{inputenc} % Caracteres con acentos.
+\usepackage[utf8]{inputenc}
+
+\newcommand{\bec}[1]{\begin{center}#1\end{center}}
 
 
 \begin{document}
@@ -12,17 +15,58 @@
 
 \newpage
 
-Prueba de trabajo de filter
+\section{Implementación de secuencias como listas.}
 
-$W_{filter} (0) = k_1$
+\subsection{Análisis de filterS}
 
-$W_{filter} (n) = 1 + W_{filter} (n-1)$
+\begin{math} 
+    filter :: (a \rightarrow Bool) \rightarrow [a] \rightarrow [a] 
+
+    filter f [] = [] 
+
+    filter f (x:xs) = if f x then x : (filter f xs) else filter f xs
+\end{math}
+
+
+\subsubsection{Trabajo de filterS}
+
 
 \begin{math}
-    p(x) = (x - 1) \cdot (x - 1)
+    W_{filterS} (0) = k_1
 
+    W_{filterS} (n) = 1 + W_{filterS} (n-1) 
+\end{math}
+
+
+Proponemos que el $W_{filterS}(n)$ es \theta(n) 
+
+\bec{Prueba de trabajo de filterS}
+
+\begin{math}
+    W(n) = 1 + W(n-1)
+
+    W(n) - W(n-1) = 1 (b = 1, y pol constate 1)
 \end{math}{}
 
+    Luego el polinomio caracteristico es $(x - 1) \cdot (x - 1) = (x - 1)^2$ con raiz 
+    uno de multiplicidad 2.
+
+    Entoces la solucion es de la forma $W(n) = c_1 \cdot 1^n + c_2 \cdot n \cdot 1^n$
+
+    El sistema dado por las codiciones iniciales es
+
+    \begin{math}
+        W(0) = k_1 = c_1
+
+        W(1) = c_1 + c_2 = 1 + k1 \Rightarrow c_2 = 1
+    \end{math}
+    
+    Resolviendo obtenemos $c_1 = k1$ y $c_2 = 1$ ($k_1 \neq 0$)
+
+    Por lo tanto $W_{filterS} = k_1 + n$ \Rightarrow $W_{filterS} \in \theta(n)$
+
+
+\subsubsection{Profundidad de filterS}
 
 
 \end{document}
