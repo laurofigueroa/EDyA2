@@ -103,8 +103,8 @@ reduce :: (a -> a -> a) -> a -> Arr a -> a
 reduce f b arr = if l1 == 1 then f b (arr ! 0) else reduce f b (contraer arr f)
 		            where l1 = length arr	
 
-expandir :: Arr a -> (a -> a -> a) -> Arr a
-expandir arr f | length arr2 > 1 = append (singleton (arr2 ! 0)) (expandir arr2 f)
+cont :: Arr a -> (a -> a -> a) -> Arr a
+cont arr f | length arr2 > 1 = append (singleton (arr2 ! 0)) (cont arr2 f)
                | length arr2 == 1 = singleton (arr2 ! 0) 
                | otherwise = empty
                    where arr2 = contraer arr f
@@ -116,8 +116,17 @@ choose arr1 arr2 f b n | n == 0 = b
                        | otherwise = f b (f (arr1 ! (div n 2)) (arr2 ! (n-1)))
 
 
+{-
 scan :: (a -> a -> a) -> a -> Arr a -> (Arr a, a)
 scan f b arr = let  l = length arr
-                    t = tabulate (choose (append (singleton b) (expandir arr f)) arr f b) (l+1)
+                    t = tabulate (choose (append (singleton b) (cont arr f)) arr f b) (l+1)
                     in (take' t l, (t ! l)) 
-                    
+-}
+
+scan :: (a -> a -> a) -> a -> Arr a -> (Arr a, a)
+scan f b arr | l == 1  = (append (singleton b) arr, f b (arr!0))
+	     | otherwise = ((tabulate (choose (fst (scan f b (contraer arr f))) arr f b)) l, arr!(l-1))
+		where l = length arr
+
+
+ 
