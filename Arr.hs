@@ -80,7 +80,7 @@ map' f arr = let (a,b) = (f (arr ! 0) ||| map' f (drop arr 1))
 append :: Arr a -> Arr a -> Arr a
 append arr1 arr2 = tabulate (append_aux arr1 arr2) ((length arr1) + (length arr2))
 
-8append_aux arr1 arr2 n = if n >= l1 then arr2 ! (n - l1) else arr1 ! (n) 
+append_aux arr1 arr2 n = if n >= l1 then arr2 ! (n - l1) else arr1 ! (n) 
                        where l1 = length arr1
 
 map' f arr = tabulate (map_aux f arr) (length arr)
@@ -92,18 +92,32 @@ filter_aux f a = if f a then singleton a else empty
 
 filter' f arr = flatten (map' (filter_aux f) arr)
 
-contraer :: Arr a -> Int -> (a -> a -> a) -> Arr a
-contraer arr 0 f = empty
-contraer arr 1 f = ingleton rr ! 0
-contraer arr l f = tabulate (\i -> f (nth i l) (nth i+1 l)) (lenght l)
+contraer :: Arr a -> (a -> a -> a) -> Arr a
+contraer arr f = if mod l 2 == 0 then tabulate g (div l 2) 
+                 else append (tabulate g (div l 2)) (singleton (arr ! (l-1)))
+                  where g = (\i -> f (arr ! (2*i)) (arr ! (2*i+1)))
+                        l = length arr
 
-let (a, b) = (singleton (f (arr ! 0) (arr ! 1)) ||| contraer (drop arr 2) (l-2) f)
-			in append a b
-
-
---contraer arr l f = append (singleton (f (arr ! 0) (arr ! 1))) (contraer (drop arr 2) (l-2) f) 
 
 reduce :: (a -> a -> a) -> a -> Arr a -> a
-reduce f b arr = if l1 == 1 then f b (arr ! 0) else reduce f b (contraer arr l1 f)
-		where l1 = length arr	
+reduce f b arr = if l1 == 1 then f b (arr ! 0) else reduce f b (contraer arr f)
+		            where l1 = length arr	
 
+expandir :: Arr a -> (a -> a -> a) -> Arr a
+expandir arr f | length arr2 > 1 = append (singleton (arr2 ! 0)) (expandir arr2 f)
+               | length arr2 == 1 = singleton (arr2 ! 0) 
+               | otherwise = empty
+                   where arr2 = contraer arr f
+
+choose :: Arr a -> Arr a -> (a -> a -> a) -> a -> Int -> a
+choose arr1 arr2 f b n | n == 0 = b
+                       | n == 1 = f b (arr2 ! (n-1))
+                       | mod n 2 == 0 = f b (arr1 ! (div n 2))
+                       | otherwise = f b (f (arr1 ! (div n 2)) (arr2 ! (n-1)))
+
+
+scan :: (a -> a -> a) -> a -> Arr a -> (Arr a, a)
+scan f b arr = let  l = length arr
+                    t = tabulate (choose (append (singleton b) (expandir arr f)) arr f b) (l+1)
+                    in (take' t l, (t ! l)) 
+                    

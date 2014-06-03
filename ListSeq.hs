@@ -1,20 +1,17 @@
 import Seq
+import Par
 
 singleton :: a -> [a]
-singelton a = [a]
+singleton a = [a]
 
 nth :: [a] -> Int -> a
 nth (x:xs) 0 = x
 nth (x:xs) n = nth xs (n-1)
 
-tabulate' :: (Int -> a) -> Int -> Int -> [a]
-tabulate' f n 0 = [f n]
-tabulate' f n m = f n : tabulate' f (n+1) (m-1)
-
 tabulate :: (Int -> a) -> Int -> [a]
 tabulate f 0 = []
-tabulate f 1 = f 0
-tabulate f n = let (a, b) = (tabulate f (div n 2) ||| tabulate f.(+(div n 2))(n - div n 2))
+tabulate f 1 = [f 0]
+tabulate f n = let (a, b) = (tabulate f (div n 2) ||| tabulate (f.(+(div n 2))) (n - div n 2))
                     in a ++ b
 
 map' :: (b -> a) -> [b] -> [a]
@@ -28,6 +25,10 @@ filter' f (x:xs) = if f x then x : (filter' f xs) else filter' f xs
 append' :: [a] -> [a] -> [a]
 append' [] xs = xs
 append' (x:xs) ys = x : append' xs ys 
+
+length' :: [a] -> Int
+length' [] = 0
+length' (x:xs) = 1 + length' xs
 
 take' :: [a] -> Int -> [a] 
 take' xs 0 = []
@@ -51,11 +52,17 @@ join' :: [[a]] -> [a]
 join' [] = []
 join' (x:xs) = append' x (join' xs)
 
+contraer :: [a] -> (a -> a -> a) -> [a]
+contraer xs f = if (mod l 2 == 0) then  tabulate g (div l 2)
+                else append' (tabulate g (div l 2)) (singleton (nth xs (l-1)))
+                where g = (\i -> f (nth xs (2*i)) (nth xs (2*i+1)))
+                      l = length' xs
+
 reduce' :: (a -> a -> a) -> a -> [a] -> a
 reduce' f b [] = b
-reduce' f b (x:xs) = f x (reduce f b xs)
+reduce' f b (x:xs) = f x (reduce' f b xs)
 
-scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
+--scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
 --scan' f b [] = 
 
 
