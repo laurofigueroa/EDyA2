@@ -53,22 +53,37 @@ join' [] = []
 join' (x:xs) = append' x (join' xs)
 
 contraer :: [a] -> (a -> a -> a) -> [a]
-contraer xs f = if (mod l 2 == 0) then  tabulate g (div l 2)
-                else append' (tabulate g (div l 2)) (singleton (nth xs (l-1)))
-                where g = (\i -> f (nth xs (2*i)) (nth xs (2*i+1)))
-                      l = length' xs
-
-reduce' :: (a -> a -> a) -> a -> [a] -> a
-reduce' f b [] = b
-reduce' f b (x:xs) = f x (reduce' f b xs)
-
+contraer (x : y : xs) f = f x y : (contraer xs f)
+contraer xs f = xs
+ 
 reduce :: (a -> a -> a) -> a -> [a] -> a
 reduce f b [x] = f b x
+reduce f b [x,y] = f x y
 reduce f b (x:xs) = reduce f b (contraer (x:xs) f)
 
---scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
---scan' f b [] = 
+choose :: [a] -> [a] -> (a -> a -> a) -> Int -> a
+choose xs ys f n | mod n 2 == 0 = nth xs (div n 2)
+		 | otherwise = f (nth xs (div n 2)) (nth ys (n-1))
 
+scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)
+scan' f b [x] = (append' (singleton b) [f b x], f b x) 
+scan' f b (x:xs) = ((tabulate (choose (fst scanr) (x:xs) f) (length (x:xs))), snd scanr) 
+                    where scanr = (scan' f b (contraer (x:xs) f))
 
-
-
+instance Seq [] where
+	emptyS = []
+	singletonS a = singleton a
+	lengthS s = length' s
+	nthS s n = nth s n
+	tabulateS f n = tabulate f n
+	mapS f s = map' f s
+	filterS f s = filter' f s
+	appendS s s' = append' s s'
+	takeS s n = take' s n
+	dropS s n = drop' s n
+	showtS s = showt s
+	showlS s = showl s
+	joinS s = join' s
+	reduceS f b s = reduce f b s
+	scanS f b s = scan' f b s
+	fromList = id  

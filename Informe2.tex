@@ -1,0 +1,353 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[spanish]{babel} % Soporte en español.
+%\usepackage[latin1]{inputenc} % Caracteres con acentos.
+\usepackage[utf8]{inputenc}
+
+\newcommand{\bec}[1]{\begin{center}#1\end{center}}
+
+
+\begin{document}
+
+\title{Trabajo Práctico 2}
+\author{José Agretti, Lauro Figueroa, Franco Vitali}
+\date{3 de Junio de 2014}
+\maketitle
+
+\newpage
+
+\section{Implementación de secuencias como listas.}
+
+\subsection{Análisis de filterS}
+
+$    filter :: (a \rightarrow Bool) \rightarrow [a] \rightarrow [a] $
+
+$    filter\: f\: [] = []$
+
+  $  filter\: f\: (x:xs) = if\: f\: x\: then\: x\: : (filter\: f \:xs)\: else\: filter\: f\: xs$
+
+
+
+\subsubsection{Trabajo de filterS}
+
+
+\begin{math}
+    W_{filterS} (0) = k_1
+    W_{filterS} (n) = 1 + W_{filterS} (n-1) 
+\end{math}
+
+
+Proponemos que el $W_{filterS}(n)$ es $\Theta(n) $
+
+\begin{math}
+    W(n) = 1 + W(n-1)
+    W(n) - W(n-1) = 1 (b = 1,\: y\: pol\: constante \:1)
+\end{math}
+
+
+    Luego el polinomio caracteristico es $(x - 1) \cdot (x - 1) = (x - 1)^2$ con 
+    raiz uno de multiplicidad 2. Entonces la solución es de la forma 
+    $W(n) = c_1 \cdot 1^n + c_2 \cdot n \cdot 1^n$. 
+    El sistema dado por las condiciones iniciales es:
+
+    \begin{math}
+        W(0) = k_1 = c_1
+        W(1) = c_1 + c_2 = 1 + k1 \Rightarrow c_2 = 1
+    \end{math}
+    
+    Resolviendo obtenemos $c_1 = k1$ y $c_2 = 1$ ($k_1 \neq 0$)
+    Por lo tanto, asumiendo que el trabajo de f es $\Theta(1)$, entonces:
+
+    $W_{filterS} = k_1 + n \Rightarrow W_{filterS} \in \Theta(n)$
+
+    Si el trabajo de f no es constante, como $W_{filterS} \in \Theta(n)$ entonces:
+
+    $W_{filterS} = \sum_{i=0}^{n} (W_{f} (i))$
+
+
+\subsubsection{Profundidad de filterS}
+
+Como no paraleliza nada la profundidad coincide con el trabajo.
+
+\subsection{Análisis de trabajo y produndidad de showt}
+
+$showt :: [a] -> TreeView a [a]$
+
+$showt\: [] = EMPTY$
+
+$showt\: [x] = ELT x$
+
+$showt \:xs = let (lt, rt) = splitAt\: (div\: (length'\: xs)\: 2)\: xs \:in\: NODE\: lt\: rt $
+
+\subsubsection{Trabajo de showt}
+
+$W_{showt} (0) = k_1$
+
+$W_{showt} (1) = k_2$
+
+$W_{showt} (n) = 1 + W_{splitAt}(n) + W_{Node} = W_{splitAt}(n) + k_3 = n$
+
+$W_{splitAt}(n) \in \Theta(n)$, definido en el preludio de Haskell.
+
+\subsubsection{Profundidad de showt}
+
+El algoritmo no paraleliza, por lo tanto: $S_{showt}(n) = W_{showt}(n)$
+
+$S_{showt}(n) \in \Theta(n)$
+\subsection{Análisis de costo de reduce}
+
+$reduce :: (a -> a -> a) -> a -> [a] -> a$
+
+$reduce\: f\: b\: [x] = f \:b \:x$
+
+$reduce\: f \:b\: [x,y] = f \:x \:y$
+
+$reduce\: f\: b\: (x:xs) = reduce\: f\: b\: (contraer\: (x:xs)\: f)$
+
+Vamos a necesitar conocer la funcion contraer:
+
+$contraer :: [a] -> (a -> a -> a) -> [a]$
+
+$contraer\: (x : y : xs)\: f = f\: x\: y\: : (contraer\: xs\: f)$
+
+$contraer \:xs\: f = xs$
+
+\subsubsection{Trabajo de contraer}
+
+$W_{contraer}(0) = k_1$
+
+$W_{contraer}(1) = k_2$
+
+$W_{contraer}(n) = W_{contraer}(n-2) + k_3 \Rightarrow W_{contraer} \in \Theta(n)$
+
+\subsubsection{Profundidad de contraer}
+
+El algoritmo no paraleliza, por lo tanto:
+
+$S_{contraer} \in \Theta(n)$
+
+\subsubsection{Trabajo de reduce}
+
+$W_{reduce}(1) = W_{f}(1)$
+
+$W_{reduce}(2) = W_{f}(2)$
+
+$W_{reduce}(n) = W_{reduce}(n/2) + W_{contraer}(n)$
+
+Por teorema maestro, con a = 1, b = 2, c = 1, $W_{reduce} \in \Theta(n)$
+
+\subsubsection{Profundidad de reduce}
+
+El algoritmo no paraleliza, por lo tanto:
+
+$S_{reduce} \in \Theta(n)$
+
+\subsection{Análisis de costo de scan}
+
+Supongo $W_{f}(a) \in \Theta(1)$
+
+$scan' ::  (a -> a -> a) -> a -> [a] -> ([a], a)$
+
+$scan' \:f \:b \:[x] = (append'\: (singleton \:b)\: [f b x], f\: b\: x) $
+
+$scan' \:f\: b\: (x:xs) = ((tabulate\: (choose\: (fst\: scanr) \:(x:xs) \:f) (length\: (x:xs))), snd \:scanr) $
+
+$where\: scanr = (scan' \:f\: b\: (contraer\: (x:xs)\: f))$
+
+\subsubsection{Trabajo de scan}
+
+$W_{scan}(1) = W_{append}(1) + W_{singleton}(1) + W_{f}(1) \:\:\: \in \Theta(1)$
+
+$W_{scan}(n) = W_{tabulate.choose}(n) + W_{contraer}(n) + W_{scan}(n/2) + W_{length}(n) + k$
+
+$W_{scan}(n) = n^2 lg(n) + n + W_{scan}(n/2) + n + k$
+
+$W_{scan}(n) = W_{scan}(n/2) + n^2 lg(n) + 2n + k$
+
+Por teorema maestro, con c=2,b=2,a=1, $W_{scan}(n) \in \Theta(n^2 lg(n))$
+
+\subsubsection{Profundidad de scan}
+
+$S_{scan}(n) = S_{tabulate.choose} (n) + S_{contraer}(n) + S_{scan} (n) + S_{scan}(n/2) + S_{length}(n)$
+
+$S_{scan}(n) = nlg(n) + n + n + S_{scan}(n/2) + n + k$
+
+$S_{scan}(n) = nlg(n) + S_{scan}(n/2)$
+
+Por teorema maestro $S_{scan}(n) \in \Theta(lg(n)n)$
+
+\section{Implementacion de secuencias con arreglos}
+
+\subsection{Análisis de costo de filter}
+
+
+$filter\_aux\: :: (a\: -> \:Bool) -> a -> A.Arr\: a$
+
+
+$filter\_aux\: f\: a = if\: f \:a \:then\: singleton\: a\: else \:A.empty$
+
+$filter' :: (a -> Bool) -> A.Arr a -> A.Arr a$
+
+\textit{filter' f arr = A.flatten (map' (filter\_aux f) arr)}
+
+\subsubsection{Trabajo de filter}
+
+$W_{filter}(n) = W_{flatten}(n) + W_{map}(n) + W_{filter\_aux}$
+
+$W_{filter} (n) = n + \sum_{i=0}^{n-1}(1) + \sum_{i=0}^{n-1}(W_{f}) + W_{f} \Rightarrow$
+
+$W_{filter}(n) \in \Theta(\sum_{i=0}^{n-1} (W_{f}))$ 
+
+\subsubsection{Profundidad de filter}
+
+$S_{filter}(n) = S_{flatten}(n) + S_{map}(n) + S_{filter\_aux}$
+
+$S_{filter}(n) = lg(n) + max_{i=0}^{n-1} S(f\:i) + S(f) \Rightarrow$
+
+$S_{filter}(n) \in \Theta(lg(n) + max_{i=0}^{n-1} S(f\:i))$
+
+\subsection{Análisis de costo de showt}
+
+$showt' :: A.Arr\: a -> Seq.TreeView\: a\: (A.Arr \:a)$
+
+$showt'\: arr\: | A.length arr == 0 = EMPTY$
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:| A.length\: arr == 1 = ELT (arr \:!\: 0) $
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:| otherwise = NODE\: (take' \:arr \:n) (drop'\: arr\: n)$
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:where\: n = div \:(A.length\: arr)\: 2$
+
+\subsubsection{Trabajo de showt}
+
+$W_{showt}(0) = k_1$
+
+$W_{showt}(1) = k_2$
+
+$W_{showt}(n) = W_{take}(n) + W_{drop}(n) + k$
+
+$W_{showt}(n) \in \Theta(1)$
+
+\subsubsection{Profundidad de showt}
+
+$S_{showt}(n) = S_{take}(n) + S_{drop}(n) + k$
+
+$S_{showt}(n) \in \Theta(1)$
+
+\subsection{Análisis de costo de reduce}
+
+$reduce\: :: (a\: ->\: a\: -> a) -> a -> A.Arr\: a -> a$
+
+$reduce\: f\: b\: arr = if\: l1 == 1\: then\: f \:b \:\:(arr ! 0) \:\:else\:\: reduce\:\: f \:\:b \:\:(contraer\:\: arr\:\: f)$
+		           
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:where \:l1 = A.length\: arr	$
+
+\subsubsection{Trabajo de reduce}
+
+$W_{reduce}(n) = W_{reduce}(n/2) + W_{contraer}(n) + k$
+
+$W_{reduce}(n) = W_{reduce}(n/2) + \sum_{i=0}^{n/2 -1} + n/2 + k$
+
+$\le \sum_{i=0}^{n-1} max\: f + n + W_{reduce}(n/2)$
+
+Por T.M. , con c = 1, b = 2, a = 1 $\Rightarrow W_{reduce}(n) \in \Theta(\sum_{i=0}^{n-1} max \:f \:+ n)$
+
+$W_{contraer}(n) = W_{tabulate}(n/2) + W_{append}(n/2) = \sum_{i=0}^{n/2 \:- 1} (W_{f}) + n/2$
+
+\subsubsection{Profundidad de reduce}
+
+$S_{reduce}(n) = S_{reduce}(n/2) + S_{contraer}(n) + k$
+
+$S_{reduce}(n) = S_{reduce}(n/2) + max_{i=0}^{n/2\:-1} W_{f} + n/2 + k$
+
+Por cada llamada recursiva se calcula $max_{i=0}^{n/2\:-1} W_{f}$, y reduce se va a llamar lg(n) veces, por
+lo tanto:
+
+$W_{reduce}(n) \in \Theta(lg(n) max_{i=0}^{n/2\:-1}(W_{f})) $
+
+\subsection{Análisis de costo de scan}
+
+
+$scan :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)$
+
+$scan \:f \:b \:arr \:|\: l == 1  = (singleton\: b,\: f\: b\: (arr!0))$
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:| otherwise = ((A.tabulate (choose (fst (scanr)) arr f)) l, snd (scanr))$
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:where\:\: l = A.length\:\: arr$
+
+$\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:\:scanr\:\: =\:\: scan\:\: f\:\: b\:\: (contraer \:\:arr\:\: f)   $
+
+\subsubsection{Trabajo de scan}
+
+$W_{scan}(1) = W_{f}$
+
+$W_{scan}(n) = W_{tabulate}(n) + W_{scan}(n/2) + W_{contraer}(n) + k$
+
+$W_{scan}(n) = \sum_{i=1}^{n-1}(W_{choose}(i)) + W_{scan}(n/2) + \sum_{i=1}^{n-1}(W_{f})$
+
+Supongo $W_{f} \in \Theta(1) \Rightarrow W_{choose}(n) \in \Theta(1)$
+
+$W_{scan}(n) = n + \sum_{i=1}^{n-1}(W_{f}(i)) + W_{scan}(n/2)$
+
+Se puede ver que el trabajo es n + el costo de la funcion en cada valor de la secuencia, luego, aplicandose a una secuencia de tamaño n/2 recursivamente. Siendo el trabajo final el del conjunto de operaciones por cada subsecuencia. Este es el costo especificado en el TAD.
+
+\subsubsection{Profundidad de scan}
+
+$S_{scan}(1) = S_{f}$
+
+$S_{scan}(n) = S_{tabulate}(n) + S_{scan}(n/2) + S_{contraer}(n) + k_1$
+
+$S_{scan}(n) = max_{i=0}^{n-1} (S_{f} i) + S_{scan}(n/2) + S_{tabulate}(n/2) + k_2$
+
+$S_{scan}(n) = max_{i=0}^{n-1} (S_{f} i) + S_{scan}(n/2) + max_{i=0}^{n/2\:-1} (S_{f} i) + k_3$
+
+Por cada llamada recursiva se calcula $max_{i=0}^{n-1} (S_{f} i)$, y scan se va a llamar lg(2) veces, por lo tanto:
+
+$W_{scan} \in  \Theta(lg(n) max_{i=0}^{n-1} (S_{f} i))$
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

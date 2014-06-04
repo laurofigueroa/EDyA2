@@ -9,7 +9,7 @@
  
 -}
 
-module Arr (Arr, length, tabulate, (!), subArray, fromList, flatten) where
+module Arr (Arr, length, tabulate, (!), subArray, fromList, flatten, empty) where
 
 import Prelude hiding (length)
 import qualified Data.Vector as V
@@ -109,11 +109,9 @@ cont arr f | length arr2 > 1 = append (singleton (arr2 ! 0)) (cont arr2 f)
                | otherwise = empty
                    where arr2 = contraer arr f
 
-choose :: Arr a -> Arr a -> (a -> a -> a) -> a -> Int -> a
-choose arr1 arr2 f b n | n == 0 = b
-                       | n == 1 = f b (arr2 ! (n-1))
-                       | mod n 2 == 0 = f b (arr1 ! (div n 2))
-                       | otherwise = f b (f (arr1 ! (div n 2)) (arr2 ! (n-1)))
+choose :: Arr a -> Arr a -> (a -> a -> a) -> Int -> a
+choose arr1 arr2 f n  | mod n 2 == 0 = arr1 ! (div n 2)
+                      | otherwise = f (arr1 ! (div n 2)) (arr2 ! (n-1))
 
 
 {-
@@ -124,8 +122,8 @@ scan f b arr = let  l = length arr
 -}
 
 scan :: (a -> a -> a) -> a -> Arr a -> (Arr a, a)
-scan f b arr | l == 1  = (append (singleton b) arr, f b (arr!0))
-	     | otherwise = ((tabulate (choose (fst (scan f b (contraer arr f))) arr f b)) l, arr!(l-1))
+scan f b arr | l == 1  = (singleton b, f b (arr!0))
+	     | otherwise = ((tabulate (choose (fst (scan f b (contraer arr f))) arr f)) l, arr!(l-1))
 		where l = length arr
 
 
